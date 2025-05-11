@@ -15,6 +15,7 @@ const HomePage = () => {
   const fetchProducts = async () => {
     try {
       const res = await axios.get('http://localhost:5000/api/products');
+      console.log(res.data); // کنسول لاگ ڈال کر چیک کریں
       setProducts(res.data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -74,8 +75,7 @@ const HomePage = () => {
                     href={`https://wa.me/923059425997?text=I'm interested in ${product.title}`}
                     target="_blank"
                   >
-                    <FaWhatsapp
-                    className='mb-1' />
+                    <FaWhatsapp className='mb-1' />
                   </Button>
                   <Button variant="primary" href="tel:03059425997">
                     <FaPhone />
