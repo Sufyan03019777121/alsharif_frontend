@@ -1,24 +1,58 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Card, Button, Row, Col, Container, Form } from 'react-bootstrap';
+import { Card, Button, Row, Col, Container, Form, Modal } from 'react-bootstrap';
 import { FaWhatsapp, FaPhone } from 'react-icons/fa';
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isPhoneNumberSubmitted, setIsPhoneNumberSubmitted] = useState(false);
 
   useEffect(() => {
     fetchProducts();
+    const interval = setInterval(() => {
+      // Ping the server to keep it active
+      axios.get('https://al-sharif-nursery.onrender.com/api/products')
+        .then(response => console.log('Ping sent to keep the server alive'))
+        .catch(error => console.error('Error pinging server:', error));
+    }, 14 * 60 * 1000); // Ping every 14 minutes
+
+    const timer = setTimeout(() => {
+      setShowModal(true);
+    }, 10000); // Show after 10 seconds
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timer);
+    };
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/products');
+      const res = await axios.get('https://al-sharif-nursery.onrender.com/api/products');
       console.log(res.data); // کنسول لاگ ڈال کر چیک کریں
       setProducts(res.data);
     } catch (error) {
       console.error('Error fetching products:', error);
+    }
+  };
+
+  const handlePhoneSubmit = async () => {
+    if (!phoneNumber) {
+      alert('Phone number is required');
+      return;
+    }
+
+    try {
+      await axios.post('https://al-sharif-nursery.onrender.com/api/phoneNumbers', { phoneNumber });
+      setIsPhoneNumberSubmitted(true);
+      setShowModal(false);
+      alert('Phone number saved successfully');
+    } catch (error) {
+      console.error('Error saving phone number:', error);
     }
   };
 
@@ -89,6 +123,29 @@ const HomePage = () => {
           </Col>
         ))}
       </Row>
+
+      {/* Modal for phone number */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Enter Your Phone Number</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form.Control
+            type="text"
+            placeholder="Enter phone number"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handlePhoneSubmit}>
+            Submit
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
