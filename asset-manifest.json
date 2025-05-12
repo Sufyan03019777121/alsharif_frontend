@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/your-repo-name/static/css/main.6b15bb53.css",
+    "main.js": "/your-repo-name/static/js/main.8696a79b.js",
+    "static/js/453.8ab44547.chunk.js": "/your-repo-name/static/js/453.8ab44547.chunk.js",
+    "static/media/alsharifnursery_logo.png": "/your-repo-name/static/media/alsharifnursery_logo.910cf33c970237c314c0.png",
+    "index.html": "/your-repo-name/index.html",
+    "main.6b15bb53.css.map": "/your-repo-name/static/css/main.6b15bb53.css.map",
+    "main.8696a79b.js.map": "/your-repo-name/static/js/main.8696a79b.js.map",
+    "453.8ab44547.chunk.js.map": "/your-repo-name/static/js/453.8ab44547.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.6b15bb53.css",
+    "static/js/main.8696a79b.js"
+  ]
+}
