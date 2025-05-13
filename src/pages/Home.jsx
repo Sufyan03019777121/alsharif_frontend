@@ -22,7 +22,7 @@ const HomePage = () => {
 
     const timer = setTimeout(() => {
       setShowModal(true);
-    }, 10000); // Show after 10 seconds
+    }, 5000); // Show after 10 seconds
 
     return () => {
       clearInterval(interval);
