@@ -1,147 +1,160 @@
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Container, Form, Button, Alert, Table } from 'react-bootstrap';
 
 const CheckoutPage = () => {
+  const [cart, setCart] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const savedPhone = localStorage.getItem('phoneNumber');
+    if (savedPhone) {
+      setPhoneNumber(savedPhone);
+      fetchCart(savedPhone);
+    }
+  }, []);
+
+  const fetchCart = async (phone) => {
+    try {
+      const res = await axios.get(`https://al-sharif-nursery.onrender.com/api/cart/${phone}`);
+      setCart(res.data.items || []);
+    } catch (err) {
+      console.error(err);
+      setCart([]);
+    }
+  };
+
+  const totalAmount = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+
+    if (!name.trim() || !address.trim()) {
+      setError('Please fill in your name and address.');
+      return;
+    }
+
+    if (cart.length === 0) {
+      setError('Your cart is empty.');
+      return;
+    }
+
+    try {
+      const orderData = {
+        phoneNumber,
+        name,
+        address,
+        items: cart,
+        totalAmount,
+        orderDate: new Date().toISOString(),
+      };
+
+      // API call to place order
+      await axios.post('https://al-sharif-nursery.onrender.com/api/orders', orderData);
+
+      // Optionally clear cart after order
+      await axios.delete(`https://al-sharif-nursery.onrender.com/api/cart/clear/${phoneNumber}`);
+
+      setOrderPlaced(true);
+      setError('');
+      setCart([]);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to place order. Please try again.');
+    }
+  };
+
+  if (orderPlaced) {
+    return (
+      <Container className="mt-5 text-center">
+        <h2>Thank you for your order!</h2>
+        <p>Your order has been placed successfully.</p>
+        <Button href="/">Back to Home</Button>
+      </Container>
+    );
+  }
+
   return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Checkout</h2>
-      <div className="row">
-        
-        {/* Shipping Info */}
-        <div className="col-md-6 mb-4">
-          <div className="card p-4 shadow-sm border-0 rounded">
-            <h4 className="text-success">Shipping Information</h4>
-            <form>
-              <div className="mb-3">
-                <label className="form-label">Full Name</label>
-                <input type="text" className="form-control" placeholder="Enter your full name" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Address</label>
-                <input type="text" className="form-control" placeholder="Enter your address" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">City</label>
-                <input type="text" className="form-control" placeholder="Enter your city" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Phone Number</label>
-                <input type="text" className="form-control" placeholder="Enter your phone number" />
-              </div>
-            </form>
-          </div>
-        </div>
+    <Container className="mt-4" style={{ maxWidth: '600px' }}>
+      <h2 className="mb-4">Checkout</h2>
 
-        {/* Payment Info */}
-        <div className="col-md-6 mb-4">
-          <div className="card p-4 shadow-sm border-0 rounded">
-            <h4 className="text-success">Payment Information</h4>
-            <form>
-              <div className="mb-3">
-                <label className="form-label">Select Payment Method</label>
-                <select className="form-select">
-                  <option value="card">Credit/Debit Card</option>
-                  <option value="easypaisa">EasyPaisa</option>
-                  <option value="jazzcash">JazzCash</option>
-                </select>
-              </div>
+      {error && <Alert variant="danger">{error}</Alert>}
 
-              {/* Card Details */}
-              <div className="mb-3">
-                <label className="form-label">Card Number</label>
-                <input type="text" className="form-control" placeholder="Enter card number" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Expiry Date</label>
-                <input type="text" className="form-control" placeholder="MM/YY" />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">CVV</label>
-                <input type="text" className="form-control" placeholder="CVV" />
-              </div>
+      <h5>Your Cart</h5>
+      {cart.length === 0 ? (
+        <p>Your cart is empty.</p>
+      ) : (
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>Plant</th>
+              <th>Quantity</th>
+              <th>Price (Rs)</th>
+              <th>Subtotal (Rs)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cart.map((item, i) => (
+              <tr key={i}>
+                <td>{item.title}</td>
+                <td>{item.quantity || 1}</td>
+                <td>{item.price}</td>
+                <td>{(item.price * (item.quantity || 1)).toFixed(2)}</td>
+              </tr>
+            ))}
+            <tr>
+              <td colSpan="3" className="text-end"><strong>Total</strong></td>
+              <td><strong>Rs {totalAmount.toFixed(2)}</strong></td>
+            </tr>
+          </tbody>
+        </Table>
+      )}
 
-              {/* EasyPaisa / JazzCash Info (Static message) */}
-              <div className="alert alert-info mt-3" role="alert">
-                For EasyPaisa or JazzCash, please send payment to:<br />
-                <strong>Account Number:</strong> 0345-1234567<br />
-                After payment, please mention Transaction ID in the order notes.
-              </div>
-            </form>
-          </div>
-        </div>
+      <Form onSubmit={handlePlaceOrder}>
+        <Form.Group className="mb-3" controlId="formName">
+          <Form.Label>Full Name</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter your full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </Form.Group>
 
-      </div>
+        <Form.Group className="mb-3" controlId="formPhone">
+          <Form.Label>Phone Number</Form.Label>
+          <Form.Control
+            type="text"
+            value={phoneNumber}
+            readOnly
+          />
+          <Form.Text className="text-muted">
+            Phone number cannot be changed here. Go back to Home to update.
+          </Form.Text>
+        </Form.Group>
 
-      {/* Order Summary */}
-      <div className="row">
-        <div className="col-12">
-          <div className="card p-4 shadow-sm border-0 rounded">
-            <h4 className="text-success">Order Summary</h4>
-            <ul className="list-group mb-3">
-              <li className="list-group-item d-flex justify-content-between">
-                <span>Product 1</span>
-                <strong>Rs. 1000</strong>
-              </li>
-              <li className="list-group-item d-flex justify-content-between">
-                <span>Product 2</span>
-                <strong>Rs. 2000</strong>
-              </li>
-              <li className="list-group-item d-flex justify-content-between">
-                <span>Total</span>
-                <strong>Rs. 3000</strong>
-              </li>
-            </ul>
-            <button className="btn btn-success w-100">Place Order</button>
-          </div>
-        </div>
-      </div>
+        <Form.Group className="mb-4" controlId="formAddress">
+          <Form.Label>Delivery Address</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            placeholder="Enter your delivery address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+        </Form.Group>
 
-      {/* Internal CSS for Checkout Page Styling */}
-      <style jsx>{`
-        .card {
-          border-radius: 15px;
-        }
-
-        .card p {
-          font-size: 14px;
-        }
-
-        .btn-success {
-          background-color: #2a7d2e !important;
-          border-color: #2a7d2e !important;
-          padding: 12px;
-          font-size: 18px;
-          font-weight: bold;
-        }
-
-        .btn-success:hover {
-          background-color: #1f5e1b !important;
-          border-color: #1f5e1b !important;
-        }
-
-        .alert-info {
-          background-color: #e7f4e4;
-          border-color: #c1e6c1;
-          color: #2a7d2e;
-          font-weight: bold;
-        }
-
-        .form-control {
-          border-radius: 10px;
-        }
-
-        .form-label {
-          font-weight: bold;
-        }
-
-        .form-select {
-          border-radius: 10px;
-        }
-
-        .shadow-sm {
-          box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-      `}</style>
-    </div>
+        <Button variant="success" type="submit" disabled={cart.length === 0}>
+          Place Order
+        </Button>
+      </Form>
+    </Container>
   );
 };
 

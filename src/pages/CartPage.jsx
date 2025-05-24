@@ -1,43 +1,85 @@
-import React from 'react';
-import { Container, Table, Button } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Container, Button, Row, Col, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-const CartPage = ({ cartItems = [], onRemoveItem }) => {
-  const totalPrice = cartItems.reduce((total, item) => total + item.price, 0);
+const CartPage = () => {
+  const [cart, setCart] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // جب فون نمبر آئے تو کارٹ fetch کریں
+  useEffect(() => {
+    if (phoneNumber) {
+      fetchCart();
+    } else {
+      setCart([]);
+    }
+  }, [phoneNumber]);
+
+  const fetchCart = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`https://al-sharif-nursery.onrender.com/api/cart/${phoneNumber}`);
+      setCart(res.data.items || []);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      setCart([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    try {
+      await axios.delete(`https://al-sharif-nursery.onrender.com/api/cart/remove/${phoneNumber}/${productId}`);
+      fetchCart();
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+    }
+  };
+
+  const handleCheckout = () => {
+    navigate('/checkout', { state: { cart, phoneNumber, totalPrice } });
+  };
+
+  const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
-    <Container className="my-5">
-      <h2 className="mb-4">🛒 Your Cart</h2>
+    <Container className="mt-4">
+      <h2>Your Cart</h2>
 
-      {cartItems.length === 0 ? (
-        <p>You haven't added anything to the cart yet.</p>
+      {/* فون نمبر انپٹ */}
+      <Form.Group className="mb-3" controlId="phoneNumber">
+        <Form.Label>Enter your Phone Number</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+        />
+      </Form.Group>
+
+      {loading ? (
+        <p>Loading cart...</p>
+      ) : cart.length === 0 ? (
+        <p>Your cart is empty.</p>
       ) : (
         <>
-          <Table striped bordered hover responsive>
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Remove</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map((item, index) => (
-                <tr key={index}>
-                  <td><img src={item.image} alt={item.title} style={{ height: 60 }} /></td>
-                  <td>{item.title}</td>
-                  <td>Rs. {item.price}</td>
-                  <td>
-                    <Button variant="danger" onClick={() => onRemoveItem(index)}>🗑️</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-          <h4 className="text-end">Total Price: Rs. {totalPrice}</h4>
-          <div className="text-end">
-            <Button variant="success">🔒 Confirm Order</Button>
-          </div>
+          {cart.map((item) => (
+            <Row key={item._id} className="mb-3 align-items-center">
+              <Col>{item.title}</Col>
+              <Col>Rs {item.price} × {item.quantity}</Col>
+              <Col>
+                <Button variant="danger" size="sm" onClick={() => removeFromCart(item.productId)}>
+                  Remove
+                </Button>
+              </Col>
+            </Row>
+          ))}
+          <h4>Total: Rs {totalPrice}</h4>
+          <Button variant="success" onClick={handleCheckout}>Proceed to Checkout</Button>
         </>
       )}
     </Container>

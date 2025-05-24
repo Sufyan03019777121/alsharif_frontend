@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const LoginRegister = () => {
-  const [isLogin, setIsLogin] = useState(true); // true = login page, false = register page
-
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!email || !password || (!isLogin && !confirmPassword)) {
       alert('براہ کرم تمام فیلڈز مکمل کریں!');
       return;
@@ -17,10 +18,26 @@ const LoginRegister = () => {
       alert('پاس ورڈ میچ نہیں کر رہے!');
       return;
     }
-    if (isLogin) {
-      console.log('Logging in:', { email, password });
-    } else {
-      console.log('Registering:', { email, password });
+
+    try {
+      if (isLogin) {
+        const res = await axios.post('https://al-sharif-nursery.onrender.com/api/login', { email, password });
+        alert(res.data.message);
+      } else {
+        const res = await axios.post('https://al-sharif-nursery.onrender.com/api/register', { email, password });
+        alert(res.data.message);
+        setIsLogin(true);
+      }
+      // فارم ری سیٹ کرو ہر submit کے بعد
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      if (error.response) {
+        alert(error.response.data.message);
+      } else {
+        alert('Server error');
+      }
     }
   };
 
@@ -37,7 +54,7 @@ const LoginRegister = () => {
               className="form-control"
               placeholder="Enter email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value)} // ہر key press پر state update ہو رہی ہے
             />
           </div>
 
@@ -48,7 +65,7 @@ const LoginRegister = () => {
               className="form-control"
               placeholder="Enter password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)} // ہر key press پر state update ہو رہی ہے
             />
           </div>
 
@@ -60,7 +77,7 @@ const LoginRegister = () => {
                 className="form-control"
                 placeholder="Confirm password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)} // ہر key press پر state update ہو رہی ہے
               />
             </div>
           )}
@@ -74,7 +91,13 @@ const LoginRegister = () => {
             <span
               className="text-primary"
               style={{ cursor: 'pointer' }}
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                // فارم صاف کر دیں جب login/register toggle کریں
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+              }}
             >
               {isLogin ? 'Register' : 'Login'}
             </span>

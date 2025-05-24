@@ -2,12 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Container, Card, Button, Row, Col, Spinner } from 'react-bootstrap';
-import { FaWhatsapp, FaPhone, FaArrowLeft } from 'react-icons/fa';
+import { FaWhatsapp, FaPhone, FaArrowLeft, FaShoppingCart } from 'react-icons/fa';
 
 const DetailPage = () => {
-  const { id } = useParams(); // 🧠 get product ID from URL
+  const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState(() => {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -23,6 +27,21 @@ const DetailPage = () => {
 
     fetchProductDetail();
   }, [id]);
+
+  const addToCart = () => {
+    const exist = cart.find(item => item._id === product._id);
+    let updatedCart;
+    if (exist) {
+      updatedCart = cart.map(item =>
+        item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
+      );
+    } else {
+      updatedCart = [...cart, { ...product, quantity: 1 }];
+    }
+    setCart(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    alert('Added to cart!');
+  };
 
   if (loading) {
     return (
@@ -45,11 +64,10 @@ const DetailPage = () => {
   return (
     <Container className="mt-4">
       <div className="mb-4 text-center">
-        <Link to="/" className="btn btn-secondary">
-            <FaArrowLeft /> Back to Home
-          </Link> 
+        <Link to="/" className="btn btn-secondary mb-2">
+          <FaArrowLeft /> Back to Home
+        </Link>
         <h2>{product.title}</h2>
-        
       </div>
 
       <Row className="g-3">
@@ -68,7 +86,7 @@ const DetailPage = () => {
 
         <p className="text-muted">{product.description}</p>
 
-        <div className="d-flex gap-3 mt-3">
+        <div className="d-flex flex-wrap gap-3 mt-3">
           <Button
             variant="success"
             href={`https://wa.me/923059425997?text=I'm interested in ${product.title}`}
@@ -79,7 +97,9 @@ const DetailPage = () => {
           <Button variant="primary" href="tel:03059425997">
             <FaPhone /> Call
           </Button>
-          
+          <Button variant="warning" onClick={addToCart}>
+            <FaShoppingCart /> Add to Cart
+          </Button>
         </div>
       </Card>
     </Container>

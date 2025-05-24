@@ -11,11 +11,28 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thank you for contacting us!');
-    setFormData({ name: '', email: '', message: '' });
+
+    try {
+      const response = await fetch('https://al-sharif-nursery.onrender.com/api/contacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert('Thank you for contacting us!');
+        setFormData({ name: '', email: '', message: '' });
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      alert('Server error. Please try later.');
+    }
   };
 
   return (
@@ -26,9 +43,9 @@ const Contact = () => {
         {/* Contact Info */}
         <div className="col-md-6 contact-info bg-light rounded shadow-sm p-4">
           <h4 className="mb-3">Contact Information</h4>
-          <p><strong>📞 Phone:</strong> +92 300 1234567</p>
+          <p><strong>📞 Phone:</strong> +92 305 9425997</p>
           <p><strong>📧 Email:</strong> contact@alsharifnursery.com</p>
-          <p><strong>📍 Location:</strong> Lahore, Pakistan</p>
+          <p><strong>📍 Location:</strong> pattoki, Pakistan</p>
           <p className="mt-4 text-muted">
             We usually respond within 24 hours. You can also reach us on WhatsApp.
           </p>
@@ -86,7 +103,6 @@ const Contact = () => {
         </div>
       </div>
 
-      {/* Internal CSS */}
       <style jsx>{`
         .contact-container {
           background: #f9f9f9;
