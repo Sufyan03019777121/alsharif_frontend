@@ -18,13 +18,13 @@ const Navbar = () => {
       <BSNavbar bg="success" variant="dark" expand="lg" className="navbar-custom mb-3">
         <Container fluid className="d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center">
-            <BSNavbar.Brand as={Link} to="/" className="navbar-logo me-2">
+            <BSNavbar.Brand as={Link} to="/" className="navbar-logo me-2 shadow rounded-5">
               <img style={{ height: 40 }} src={alsharif_nav_logo} alt="logo" />
             </BSNavbar.Brand>
-            <span className="text-white fw-bold d-lg-none d-inline fs-6">Al Sharif Nursery</span>
+            <span className="text-white shadow fw-bold d-lg-none d-inline fs-6">Al Sharif Nursery</span>
           </div>
 
-          <BSNavbar.Toggle aria-controls="offcanvasNavbar" onClick={handleShow} />
+          <BSNavbar.Toggle aria-controls="offcanvasNavbar " onClick={handleShow} />
         </Container>
 
         <BSNavbar.Offcanvas
@@ -35,35 +35,35 @@ const Navbar = () => {
           placement="start"
         >
           <Offcanvas.Header closeButton className='shadow rounded-3 m-3'>
-            <Offcanvas.Title id="offcanvasNavbarLabel" className="text-center w-100 fw-bold fs-5 text-success">
+            <Offcanvas.Title id="offcanvasNavbarLabel" className="text-center w-100 fw-bold fs-5  text-success">
               Al Sharif Nursery
             </Offcanvas.Title>
           </Offcanvas.Header>
 
           <Offcanvas.Body>
             <Nav className="justify-content-end shadow rounded-3 bg-success text-center flex-grow-1 p-2 navbar-links">
-              <Nav.Link as={Link} to="/" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaHome className="icon icon-1" /> Home
               </Nav.Link>
-              <Nav.Link as={Link} to="/contact" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/contact" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaPhone className="icon icon-2" /> Contact
               </Nav.Link>
-              <Nav.Link as={Link} to="/AboutUs" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/AboutUs" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaInfoCircle className="icon icon-3" /> About_Us
               </Nav.Link>
-              <Nav.Link as={Link} to="/login" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/login" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaSignInAlt className="icon icon-4" /> Login
               </Nav.Link>
-              <Nav.Link as={Link} to="/userdashboard" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/userdashboard" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaUser className="icon icon-5" /> Dashboard
               </Nav.Link>
-              <Nav.Link as={Link} to="/checkoutpage" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/checkoutpage" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaCreditCard className="icon icon-6" /> Checkout
               </Nav.Link>
-              <Nav.Link as={Link} to="/ProductList" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/ProductList" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaList className="icon icon-7" /> Products
               </Nav.Link>
-              <Nav.Link as={Link} to="/CartPage" onClick={handleClose} className="navbar-link shadow">
+              <Nav.Link as={Link} to="/CartPage" onClick={handleClose} className="navbar-link shadow mb-3">
                 <FaShoppingCart className="icon icon-8" /> Cart
               </Nav.Link>
             </Nav>
