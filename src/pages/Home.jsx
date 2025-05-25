@@ -14,20 +14,16 @@ const HomePage = () => {
   const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
-    fetchProducts();
-
     const savedPhone = localStorage.getItem('phoneNumber');
     if (savedPhone) {
       setPhoneNumber(savedPhone);
       setIsPhoneNumberSubmitted(true);
+      fetchProducts();
       fetchCart(savedPhone);
     } else {
-      // Show phone number modal after 5 seconds if not saved
-      const timer = setTimeout(() => setShowModal(true), 5000);
-      return () => clearTimeout(timer);
+      setShowModal(true); // Show modal immediately
     }
 
-    // Optional: ping server every 14 minutes to keep alive (can be removed if unnecessary)
     const interval = setInterval(() => {
       axios.get('https://al-sharif-nursery.onrender.com/api/products').catch(() => {});
     }, 14 * 60 * 1000);
@@ -35,7 +31,6 @@ const HomePage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch products from API
   const fetchProducts = async () => {
     try {
       const res = await axios.get('https://al-sharif-nursery.onrender.com/api/products');
@@ -45,7 +40,6 @@ const HomePage = () => {
     }
   };
 
-  // Fetch cart by phone number
   const fetchCart = async (phone) => {
     try {
       const res = await axios.get(`https://al-sharif-nursery.onrender.com/api/cart/${phone}`);
@@ -56,11 +50,9 @@ const HomePage = () => {
     }
   };
 
-  // Save phone number and fetch cart
   const handlePhoneSubmit = async () => {
     if (!phoneNumber.trim()) {
-      alert('Phone number is empty. You can continue without it.');
-      setShowModal(false);
+      alert('Please enter your phone number to continue.');
       return;
     }
 
@@ -70,6 +62,7 @@ const HomePage = () => {
       setShowModal(false);
       localStorage.setItem('phoneNumber', phoneNumber);
       alert(`Phone number (${phoneNumber}) saved successfully`);
+      fetchProducts();
       fetchCart(phoneNumber);
     } catch (error) {
       console.error('Error saving phone number:', error);
@@ -77,28 +70,24 @@ const HomePage = () => {
     }
   };
 
-  // Add product to cart
   const addToCart = async (product) => {
+    if (!phoneNumber) {
+      alert('Please enter your phone number to add items to cart.');
+      return;
+    }
+
     try {
-      const userPhone = phoneNumber || 'guest';
       await axios.post('https://al-sharif-nursery.onrender.com/api/cart/add', {
-        phoneNumber: userPhone,
+        phoneNumber,
         productId: product._id,
       });
-
-      if (phoneNumber) {
-        fetchCart(phoneNumber);
-      } else {
-        alert('Product added to cart for guest user (not saved permanently)');
-        setCart(prevCart => [...prevCart, { productId: product._id, title: product.title, price: product.price, quantity: 1 }]);
-      }
+      fetchCart(phoneNumber);
     } catch (error) {
       console.error('Error adding to cart:', error);
       alert('Failed to add product to cart.');
     }
   };
 
-  // Remove product from cart
   const removeFromCart = async (productId) => {
     if (!phoneNumber) {
       alert('Please enter your phone number to remove items from cart.');
@@ -114,12 +103,10 @@ const HomePage = () => {
     }
   };
 
-  // Filter products based on search term
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Check if product is already in cart
   const isInCart = (id) => cart.some((item) => item.productId === id);
 
   return (
@@ -136,8 +123,9 @@ const HomePage = () => {
           style={{ maxWidth: '300px' }}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          disabled={!isPhoneNumberSubmitted}
         />
-        <Button variant="dark" onClick={() => setShowCart(true)}>
+        <Button variant="dark" onClick={() => setShowCart(true)} disabled={!isPhoneNumberSubmitted}>
           <FaShoppingCart className="mb-1" /> View Cart ({cart.length})
         </Button>
       </div>
@@ -187,8 +175,8 @@ const HomePage = () => {
                   <Button
                     variant={isInCart(product._id) ? "success" : "warning"}
                     onClick={() => addToCart(product)}
-                    disabled={isInCart(product._id)}
-                    title={isInCart(product._id) ? "Already in Cart" : "Add to Cart"}
+                    disabled={isInCart(product._id) || !isPhoneNumberSubmitted}
+                    title={!isPhoneNumberSubmitted ? "Phone number required" : isInCart(product._id) ? "Already in Cart" : "Add to Cart"}
                   >
                     {isInCart(product._id) ? "Added" : "Cart"}
                   </Button>
@@ -199,10 +187,10 @@ const HomePage = () => {
         ))}
       </Row>
 
-      {/* Phone Number Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Enter Your Phone Number (Optional)</Modal.Title>
+      {/* Phone Number Modal (Required) */}
+      <Modal show={showModal} backdrop="static" keyboard={false} centered>
+        <Modal.Header>
+          <Modal.Title>Enter Your Phone Number</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Control
@@ -211,10 +199,9 @@ const HomePage = () => {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
-          <small className="text-muted">You can skip this and still use the cart as a guest.</small>
+          <small className="text-muted">Phone number is required to continue.</small>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Skip</Button>
           <Button variant="primary" onClick={handlePhoneSubmit}>Submit</Button>
         </Modal.Footer>
       </Modal>
