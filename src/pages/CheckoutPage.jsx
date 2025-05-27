@@ -56,12 +56,18 @@ const CheckoutPage = () => {
       // API call to place order
       await axios.post('https://al-sharif-nursery.onrender.com/api/orders', orderData);
 
-      // Optionally clear cart after order
+      // Clear cart from server
       await axios.delete(`https://al-sharif-nursery.onrender.com/api/cart/clear/${phoneNumber}`);
 
+      // Clear local state & localStorage after successful order
       setOrderPlaced(true);
       setError('');
       setCart([]);
+      setName('');
+      setAddress('');
+      setPhoneNumber('');
+      localStorage.removeItem('phoneNumber');
+
     } catch (err) {
       console.error(err);
       setError('Failed to place order. Please try again.');

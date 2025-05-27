@@ -97,9 +97,10 @@ const DetailPage = () => {
           <Button variant="primary" href="tel:03059425997">
             <FaPhone /> Call
           </Button>
-          <Button variant="warning" onClick={addToCart}>
+          <Link to="/" className="btn btn-secondary "><FaArrowLeft /> Back to Home</Link>
+          {/* <Button variant="warning" onClick={addToCart}>
             <FaShoppingCart /> Add to Cart
-          </Button>
+          </Button> */}
         </div>
       </Card>
     </Container>
